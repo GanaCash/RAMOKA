@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente Académico</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: url('https://cdn.pixabay.com/photo/2022/07/19/13/46/study-7332172_640.png') no-repeat center center/cover;
+      color: #333;
+    }
+
+    #chat-container {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      width: 400px;
+      max-width: 90%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #chat-header {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    #chat-messages {
+      width: 100%;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .user-message {
+      background-color: #007bff;
+      color: white;
+      align-self: flex-end;
+    }
+
+    .assistant-message {
+      background-color: #e1e1e1;
+      color: #333;
+      align-self: flex-start;
+    }
+
+    #chat-input {
+      display: flex;
+      width: 100%;
+    }
+
+    #chat-input input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px 0 0 8px;
+      outline: none;
+    }
+
+    #chat-input button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+    }
+
+    #chat-input button:hover {
+      background-color: #0056b3;
+    }
+
+    .typing-indicator {
+      font-size: 14px;
+      color: #666;
+      font-style: italic;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="chat-container">
+    <div id="chat-header">Ramoka</div>
+    <div id="chat-messages">
+      <div class="message assistant-message">
+        ¡Hola! Soy Ramoka. ¿Qué te gustaría estudiar: Bachillerato o Formación Profesional (FP)?
+      </div>
+    </div>
+    <div class="typing-indicator" id="typing-indicator">El asistente está escribiendo...</div>
+    <div id="chat-input">
+      <input type="text" id="user-input" placeholder="Escribe tu respuesta aquí..." />
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    const knownWords = ['bachillerato', 'fp', 'hola','científico', 'tecnológico', 'humanidades', 'artes', 'ingeniería', 'medicina', 'informática', 'grado', 'universidad', 'cocina', 'sueldo', "carreras disponibles",'grado medio', 'grado superior'];
+
+    function sendMessage() {
+      const userInput = document.getElementById('user-input');
+      const message = userInput.value.trim();
+      if (message === '') return;
+
+      displayMessage(message, 'user-message');
+
+      const typingIndicator = document.getElementById('typing-indicator');
+      typingIndicator.style.display = 'block';
+
+      const response = generateResponse(message);
+      setTimeout(() => {
+        typingIndicator.style.display = 'none';
+        displayMessage(response, 'assistant-message');
+      }, 1000);
+
+      userInput.value = '';
+    }
+
+    function displayMessage(message, className) {
+      const chatMessages = document.getElementById('chat-messages');
+      const messageElement = document.createElement('div');
+      messageElement.innerText = message;
+      messageElement.className = `message ${className}`;
+      chatMessages.appendChild(messageElement);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function generateResponse(message) {
+      const lowerMessage = message.toLowerCase();
+
+      // Split input into words
+      const words = lowerMessage.split(' ');
+      if (lowerMessage.includes('hola') || lowerMessage.includes('no se que estudiar')) {
+        return 'Hola, soy Ramoka y estoy aquí para ayudarte, ¿qué prefieres una carrera o una FP?';
+      }
+      // Handle specific queries with more flexibility
+      
+      else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio fp?')|| lowerMessage.includes('cuánto sería mi sueldo si estudio fp')|| lowerMessage.includes('cuanto seria mi sueldo si estudio fp')) {
+        return `Podrías cobrar entre 800 y 1,200 euros al mes en un trabajo relacionado con FP.`;
+      } else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio bachillerato?')|| lowerMessage.includes("cuánto sería mi sueldo si estudio bach") || lowerMessage.includes('cuanto seria mi sueldo si estudio bach')) {
+        return `Podrías cobrar entre 1,200 y 2,000 euros al mes después de acabar la carrera universitaria.`;
+      } 
+      
+      else if (lowerMessage.includes('bachillerato') || lowerMessage.includes('bach') || lowerMessage.includes('bachiller')) {
+        return `¡Genial! Los tipos de Bachillerato son:
+        - Científico (ideal para Ingeniería, Medicina, etc.)
+        - Tecnológico
+        - Humanidades y Ciencias Sociales
+        - Artes
+        ¿Cuál te interesa más?`;
+      } else if (lowerMessage.includes('hola') || lowerMessage.includes('no se que estudiar')) {
+        return 'Hola, soy Ramoka y estoy aquí para ayudarte, ¿qué prefieres una carrera o una FP?';
+      }
+      else if (lowerMessage.includes('ahmad') || lowerMessage.includes('Pazos')) {
+        return 'Esta persona o estas persona son los que han elaborado este sitio web.';
+      }
+        else if (lowerMessage.includes('fp')) {
+        return `¡Perfecto! La FP tiene muchas opciones:
+        - Grado Medio (por ejemplo, Técnico en Informática, Cocina, etc.)
+        - Grado Superior (como Técnico Superior en Desarrollo de Aplicaciones Web)
+        ¿Te interesa alguno en particular?`;
+      } else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio fp?')|| lowerMessage.includes('cuánto sería mi sueldo si estudio fp')|| lowerMessage.includes('cuanto seria mi sueldo si estudio fp')) {
+        return `Podrías cobrar entre 800 y 1,200 euros al mes en un trabajo relacionado con FP.`;
+      } else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio bachillerato?')|| lowerMessage.includes("cuánto sería mi sueldo si estudio bach") || lowerMessage.includes('cuanto seria mi sueldo si estudio bach')) {
+        return `Podrías cobrar entre 1,200 y 2,000 euros al mes después de acabar la carrera universitaria.`;
+      } else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio medicina?')|| lowerMessage.includes('Pazos')|| lowerMessage.includes('cuánto sería mi sueldo si estudio medicinna')|| lowerMessage.includes('cuanto seria mi sueldo si quiero ser medico')) {
+        return `Podrías cobrar entre 1,800 y 2,800 euros brutos al mes como médico.`;
+      } 
+        else if (lowerMessage.includes('¿cuánto sería mi sueldo si estudio fp de mécanica?')|| lowerMessage.includes('cuanto seria mi sueldo si estudio una fp de mecanica')) {
+        return `Podrías cobrar aproximadamente 1620 euros cada mes como mécanico.`;
+      }
+        else if (lowerMessage.includes('¿cuánto sería mi sueldo si quiero ser ingeniero?')|| lowerMessage.includes('cuanto seria mi sueldo si quiero ser ingeniero')) {
+        return `Podrías cobrar entre los 1.800 y los 2.500 euros como ingeniero.`;
+      }
+       else if (lowerMessage.includes('¿cuánto sería mi sueldo si quiero ser profesor?')|| lowerMessage.includes('cuanto seria mi sueldo si quiero ser profesor')|| lowerMessage.includes('cuanto cobra un profesor en españa')|| lowerMessage.includes('cuanto cobra un profesor')) {
+        return `Podrías cobrar 2.246,49 eurosc omo maestro.`;
+      }
+
+
+      
+      else if (lowerMessage.includes('ODONTOLOGÍA') || lowerMessage.includes('DENTISTA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE ODONTOLOGÍA')|| lowerMessage.includes('CUÁNTO COBRA UN DENTISTA')|| lowerMessage.includes('CUANTO DURA LA CARRERA DE ODONTOLOGIA')|| lowerMessage.includes('CUANTO COBRA UN DENTISTA')|| lowerMessage.includes("centros para estudiar odontologia")|| lowerMessage.includes('universidades para estudiar odontologia')) { 
+    return `¡Perfecto! La CARRERA de Odontología incluye: 
+    - Duración: 5 años
+    - Centros en España: más de 20 universidades
+    - Sueldo aproximado: entre 25,000€ y 60,000€ al año, dependiendo de la experiencia, el lugar de trabajo y la especialización.
+    ?`;
+}
+
+else if (lowerMessage.includes('MEDICINA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE MEDICINA')|| lowerMessage.includes('MÉDICO') || lowerMessage.includes('MEDICA')|| lowerMessage.includes('MEDICO')|| lowerMessage.includes('CUANTO DURA LA CARRERA DE MEDICINA')|| lowerMessage.includes('CUANTO COBARA UN MEDICO')|| lowerMessage.includes('CUÁNTO COBRA UN MÉDICO')) { 
+    return `¡Perfecto! La CARRERA de Medicina incluye: 
+    - Duración: 6 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 30,000€ y 60,000€ anuales, dependiendo de la especialidad y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('ENFERMERÍA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE ENFERMERÍA')|| lowerMessage.includes('ENFERMERA')|| lowerMessage.includes('ENFERMERO')|| lowerMessage.includes('CUANTO COBARA UN enfermero')|| lowerMessage.includes('CUÁNTO COBRA UNa enfermera')) { 
+    return `¡Perfecto! La CARRERA de Enfermería incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 80 universidades y centros de formación
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo del tipo de hospital, experiencia y ubicación.
+    ?`;
+}
+
+else if (lowerMessage.includes('FISIOTERAPIA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE FISIOTERAPIA')|| lowerMessage.includes("CUANTO COBARA un fisioterapeuta")|| lowerMessage.includes('CUÁNTO COBRA UNa FisioTerapeuTa')) { 
+    return `¡Perfecto! La CARRERA de Fisioterapia incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 20,000€ y 35,000€ anuales, dependiendo de la especialización y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('VETERINARIA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE VETERINARIA')|| lowerMessage.includes('CUANTO COBARA UN veTerinario')|| lowerMessage.includes('CUÁNTO COBRA UN veTerinario')) { 
+    return `¡Perfecto! La CARRERA de Veterinaria incluye: 
+    - Duración: 5 años
+    - Centros en España: más de 10 universidades
+    - Sueldo aproximado: entre 20,000€ y 45,000€ anuales, dependiendo de la especialidad y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('FARMACIA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE FARMACIA')|| lowerMessage.includes('CUANTO COBARA UN FarmacéuTico')|| lowerMessage.includes('CUÁNTO COBRA UN FarmacéuTico')) { 
+    return `¡Perfecto! La CARRERA de Farmacia incluye: 
+    - Duración: 5 años
+    - Centros en España: más de 20 universidades
+    - Sueldo aproximado: entre 22,000€ y 40,000€ anuales, dependiendo de la experiencia y el entorno de trabajo.
+    ?`;
+}
+
+else if (lowerMessage.includes('PSICOLOGÍA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE PSICOLOGÍA')|| lowerMessage.includes('Psicologo')|| lowerMessage.includes('Psicóloga')|| lowerMessage.includes('Psicologa')) { 
+    return `¡Perfecto! La CARRERA de Psicología incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 50 universidades
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo de la especialización y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('TRABAJO SOCIAL') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE TRABAJO SOCIAL')|| lowerMessage.includes('social')) { 
+    return `¡Perfecto! La CARRERA de Trabajo Social incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 30 universidades y centros
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo del lugar y tipo de trabajo.
+    ?`;
+}
+
+else if (lowerMessage.includes('DERECHO') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE DERECHO')) { 
+    return `¡Perfecto! La CARRERA de Derecho incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 70 universidades
+    - Sueldo aproximado: entre 25,000€ y 50,000€ anuales, dependiendo de la especialización, el sector y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('ECONOMÍA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE ECONOMÍA')) { 
+    return `¡Perfecto! La CARRERA de Economía incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 25,000€ y 45,000€ anuales, dependiendo de la especialización y el tipo de empresa.
+    ?`;
+}
+
+else if (lowerMessage.includes('ADMINISTRACIÓN Y DIRECCIÓN DE EMPRESAS') || lowerMessage.includes('ADE') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE ADE')) { 
+    return `¡Perfecto! La CARRERA de Administración y Dirección de Empresas (ADE) incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 60 universidades
+    - Sueldo aproximado: entre 30,000€ y 55,000€ anuales, dependiendo de la empresa y el puesto.
+    ?`;
+}
+else if (lowerMessage.includes('Ramoka') || lowerMessage.includes('')) { 
+    return `¡Perfecto! La CARRERA e Marketing incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 25,000€ y 45,000€ anuales, dependiendo del sector y la experiencia.
+    ?`;
+}
+else if (lowerMessage.includes('MARKETING') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE MARKETING')) { 
+    return `¡Perfecto! La CARRERA e Marketing incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 25,000€ y 45,000€ anuales, dependiendo del sector y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('PERIODISMO') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE PERIODISMO')|| lowerMessage.includes('PeriodisTa')) { 
+    return `¡Perfecto! La CARRERA de Periodismo incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 30 universidades
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo del medio de comunicación y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('ARQUITECTURA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE ARQUITECTURA')|| lowerMessage.includes('ArquitecTa')|| lowerMessage.includes('ArquitecTo')) { 
+    return `¡Perfecto! La CARRERA de Arquitectura incluye: 
+    - Duración: 5 años
+    - Centros en España: más de 20 universidades
+    - Sueldo aproximado: entre 25,000€ y 50,000€ anuales, dependiendo del lugar y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('INGENIERÍA INDUSTRIAL') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE INGENIERÍA INDUSTRIAL')) { 
+    return `¡Perfecto! La CARRERA de Ingeniería Industrial incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 30,000€ y 50,000€ anuales, dependiendo de la empresa y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('INGENIERÍA INFORMÁTICA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE INGENIERÍA INFORMÁTICA')) { 
+    return `¡Perfecto! La CARRERA de Ingeniería Informática incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 30 universidades
+    - Sueldo aproximado: entre 25,000€ y 45,000€ anuales, dependiendo del sector y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('INGENIERÍA CIVIL') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE INGENIERÍA CIVIL')) { 
+    return `¡Perfecto! La CARRERA de Ingeniería Civil incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 20 universidades
+    - Sueldo aproximado: entre 30,000€ y 55,000€ anuales, dependiendo del tipo de proyectos y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('FILOLOGÍA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE FILOLOGÍA')) { 
+    return `¡Perfecto! La CARRERA de Filología incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 40 universidades
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo de la especialización y la experiencia.
+    ?`;
+}
+
+else if (lowerMessage.includes('HISTORIA') || lowerMessage.includes('CUÁNTO DURA LA CARRERA DE HISTORIA')) { 
+    return `¡Perfecto! La CARRERA de Historia incluye: 
+    - Duración: 4 años
+    - Centros en España: más de 30 universidades
+    - Sueldo aproximado: entre 18,000€ y 30,000€ anuales, dependiendo del tipo de empleo y la experiencia.
+    ?`;
+}
+
+
+
+
+
+
+
+ 
+
+
+   
+        else if (lowerMessage.includes('cocina')) {
+        return `¡Perfecto! La FP de cocina incluye:
+        - Duración: 2,000 horas (2 años)
+        - Centros en España: más de 500
+        ¿Te gustaría saber más?`;
+      } else if (lowerMessage.includes('ingeniería') || lowerMessage.includes('ingeniero')) {
+        return 'Para Ingeniería, te recomiendo un Bachillerato Científico o Tecnológico. También puedes optar por un FP técnico si prefieres un camino más práctico. ¿Quieres saber más?';
+      } else if (lowerMessage.includes('humanidades') || lowerMessage.includes('artes')) {
+        return 'Para Humanidades o Artes, considera el Bachillerato de Artes o Humanidades. ¿Te interesa alguna carrera en estas áreas?';
+      } else if (lowerMessage.includes('informática') || lowerMessage.includes('informático')|| lowerMessage.includes('informatica')|| lowerMessage.includes('informatico')) {
+        return 'Si te interesa Informática, puedes elegir un FP de Grado Superior en Desarrollo de Aplicaciones Web o Redes, o un Bachillerato Científico para acceder a la universidad. ¿Cuál prefieres?';
+      } else if (lowerMessage.includes('medicina') || lowerMessage.includes('médico')) {
+        return 'Para estudiar Medicina, elige un Bachillerato Científico con énfasis en Biología y Química. ¿Te gustaría saber más sobre cómo prepararte?';
+      } 
+      else if (lowerMessage.includes('carreras disponibles') || lowerMessage.includes('carreras que hay')|| lowerMessage.includes('carreras que estan disponibles')|| lowerMessage.includes("carreras hay")) {
+        return `1. Ciencias de la Salud
+Medicina
+Odontología
+Enfermería
+Fisioterapia
+Veterinaria
+Farmacia
+Psicología
+Terapia Ocupacional
+Nutrición y Dietética
+Biomedicina
+Logopedia
+2. Ciencias Sociales y Jurídicas
+Derecho
+Ciencias Políticas y de la Administración
+Trabajo Social
+Sociología
+Criminología
+Economía
+Administración y Dirección de Empresas (ADE)
+Marketing y Comunicación
+Turismo
+Educación Social
+3. Humanidades
+Filología (Española, Inglesa, Francesa, Alemana, etc.)
+Historia
+Filosofía
+Geografía
+Arte (Historia del Arte, Bellas Artes)
+Antropología
+Teología
+Lingüística
+Relaciones Internacionales
+4. Ciencias Exactas y Naturales
+Matemáticas
+Física
+Química
+Biología
+Geología
+Astronomía
+Bioquímica
+Ingeniería Ambiental
+5. Ingeniería y Arquitectura
+Ingeniería Industrial
+Ingeniería Informática
+Ingeniería Civil
+Ingeniería Electrónica
+Ingeniería Mecánica
+Arquitectura
+Ingeniería de Telecomunicaciones
+Ingeniería Aeroespacial
+Ingeniería de Software
+6. Ciencias de la Comunicación y Medios
+Periodismo
+Publicidad y Relaciones Públicas
+Comunicación Audiovisual
+Diseño Gráfico
+Producción de Cine y Televisión
+Dirección de Arte
+Relaciones Internacionales y Comunicación Internacional
+7. Ciencias de la Computación y Tecnologías
+Desarrollo de Software
+Inteligencia Artificial
+Ciberseguridad
+Big Data y Análisis de Datos
+Redes de Computadores
+Realidad Virtual y Aumentada
+Tecnologías de la Información y Comunicación (TIC)
+8. Ciencias Empresariales
+Administración y Dirección de Empresas (ADE)
+Economía
+Finanzas
+Marketing
+Gestión de Recursos Humanos
+Comercio Internacional
+Contabilidad y Finanzas
+Gestión de la Innovación
+Emprendimiento
+9. Ciencias de la Educación
+Magisterio (Educación Infantil, Primaria, Secundaria)
+Pedagogía
+Psicopedagogía
+Educación Física
+Música y Educación
+Técnico en Integración Social
+Enseñanza de Idiomas
+10. Ciencias del Deporte y Actividad Física
+Ciencias de la Actividad Física y del Deporte
+Terapia Deportiva
+Entrenamiento Deportivo
+Nutrición Deportiva
+Gestión Deportiva
+11. Arte y Diseño
+Diseño Gráfico
+Diseño de Moda
+Diseño de Interiores
+Bellas Artes
+Diseño Industrial
+Arte Digital
+Ilustración
+12. Ciencias Agrarias y Forestales
+Ingeniería Agrícola
+Ingeniería Forestal
+Agroalimentaria
+Gestión y Organización de Empresas Agropecuarias
+Tecnología de los Alimentos
+13. Ciencias Ambientales
+Ciencias Ambientales
+Gestión de Recursos Naturales
+Ingeniería Ambiental
+Ecología
+Gestión de Residuos y Energías Renovables
+14. Lenguas y Traducción
+Traducción e Interpretación
+Lingüística Aplicada
+Filología
+Lenguas Extranjeras
+Lengua y Literatura
+Estas son solo algunas de las muchas opciones de estudios universitarios disponibles en España y en muchos otros países. Cada carrera tiene su propio enfoque y abre un abanico de posibilidades en el mercado laboral. La elección de una carrera depende de los intereses, habilidades y metas profesionales de cada estudiante.`;
+      }
+        else if (lowerMessage.includes('universidad') || lowerMessage.includes('carrera')) {
+        return '¿Te gustaría saber qué carreras están disponibles en la universidad? ¿O necesitas ayuda para elegir una?';
+      } 
+        else if (lowerMessage.includes('fp de mecanica')) {
+        return `Podrías cobrar entre 800 y 1,200 euros al mes en un trabajo relacionado con FP de mécanica.`;
+      }
+        else if (lowerMessage.includes('grado medio')) {
+        return 'El Grado Medio es ideal si quieres empezar con una formación práctica en áreas como cocina, electrónica o informática. ¿Te interesa algún área en particular?';
+      } else if (lowerMessage.includes('grado superior')) {
+        return 'El Grado Superior te ofrece una formación más avanzada y está enfocado a áreas más técnicas y especializadas. ¿Te gustaría saber más sobre Grado Superior?';
+      } else {
+        return 'No estoy seguro de entender tu mensaje. Podría que esta profesión no está en el sistema. ¿Podrías especificar si te interesa Bachillerato, FP o una carrera en particular? 😊';
+      }
+    }
+  </script>
+</body>
+</html>
